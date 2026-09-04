@@ -1,0 +1,75 @@
+name: Create GitHub Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Release Tag (e.g. v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+      release_title:
+        description: 'Release Title'
+        required: true
+        default: 'IN 3410 Revision Platform Release'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build static web assets
+        run: npm run build
+
+      - name: Package release ZIP
+        run: |
+          cd dist
+          zip -r ../in3410-revision-dist.zip .
+          cd ..
+
+      - name: Determine tag and title
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "tag=${{ github.event.inputs.tag_name }}" >> $GITHUB_OUTPUT
+            echo "title=${{ github.event.inputs.release_title }}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+            echo "title=Release ${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create GitHub Release & Upload Asset
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: ${{ steps.tag.outputs.title }}
+          draft: false
+          prerelease: false
+          files: in3410-revision-dist.zip
+          generate_release_notes: true
+          body: |
+            ## 🎓 IN 3410 Data Mining & Warehousing Revision Platform
+
+            Automated release build for **IN 3410 Data Mining & Warehousing Exam Preparation Portal**.
+
+            ### Included Assets:
+            - **`in3410-revision-dist.zip`**: Standalone, self-contained production bundle of the web platform.
+
+            ### Quick Deployment / Local Use:
+            1. Download and unzip `in3410-revision-dist.zip`.
+            2. Serve with any HTTP server (e.g., `npx serve`, Python `python3 -m http.server 8080`, or upload to any static hosting provider).
