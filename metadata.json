@@ -1,0 +1,6 @@
+{
+  "name": "IN 3410 Data Mining & Warehousing Exam Prep Portal",
+  "description": "Comprehensive university study platform for IN 3410 Data Mining & Data Warehousing featuring full past paper solutions, lecture notes, topic explorer, and exam revision guides.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
